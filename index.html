@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <script type="module">
+/*
+Name: Rene Suarez
+Program Name: Assignment 2 Firebase
+Details: This project uses firebase to create a backend for our website it allows for users to create,login,and save data to their accounts.
+so that it can be accessed later.
+
+*/
+
+
+
+// Import the functions you need from the SDKs you need
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+import { getDatabase, ref, set,child, get,update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+
+
+
+
+// TODO: Add SDKs for Firebase products that you want to use
+
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+
+// Your web app's Firebase configuration
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyDKHzHvEsypKcPzLNyTXvh9857-TKDrpi8",
+
+  authDomain: "final-project-98675.firebaseapp.com",
+
+  databaseURL: "https://final-project-98675-default-rtdb.firebaseio.com",
+
+  projectId: "final-project-98675",
+
+  storageBucket: "final-project-98675.appspot.com",
+
+  messagingSenderId: "69505154519",
+
+  appId: "1:69505154519:web:8b82a2ad6140ab62e7df92",
+
+  measurementId: "G-K20SDC8TQP"
+
+};
+
+
+// Initialize Firebase
+
+const app = initializeApp(firebaseConfig);
+
+
+        const database = getDatabase(app);
+        const auth = getAuth();
+        const db = getFirestore(app);
+        // creating different dom elements that we will be using to create the users posts and setting their ids and class correctly.
+        let user = "";
+        let container = document.getElementById("container");
+        let createPost = document.getElementById("createPost");
+        let newPostContainer = document.createElement('div');
+        let newPost = document.createElement('div');
+        let resetButton = document.getElementById("reset");
+        let subHeading = document.createElement('div');
+        subHeading.id = "flexContainerColumn";
+        let documentCard = document.getElementById('loginCard');
+        let booksArray = [];
+        let userCart = [];
+
+
+        // Adding an event that occurs everytime that the signup button gets clicked by the user it takes the 
+        // data that is in the user signup fields and sends them to the data to create a new user account.
+        signup.addEventListener('click',(e)=> {
+
+            //getting data from inputs.
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            var fullname = document.getElementById('full_name').value;
+            createUserWithEmailAndPassword(auth,email, password, fullname)
+                //firebase function signing user up.
+            .then((userCredential) => {
+                // Signed up 
+                const user = userCredential.user;
+                set(ref(database, 'users/' + user.uid),{
+                    
+                    email: email,
+                    fullname: fullname
+
+                })
+                alert('user created!')
+                // ...
+                })
+               //errors 
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                alert(errorMessage)
+                // ..
+                });
+            
+        })
+
+        // adds click event listener so that the firebase function that sends a password reset email gets sent.
+resetButton.addEventListener("click", function()
+{   
+    //gets the users email from the login input
+    email = document.getElementById('email').value;
+    const auth = getAuth();
+    //running firebase password reset function
+sendPasswordResetEmail(auth, email)
+  .then(() => {
+    //alerts user that the email has been sent
+    alert("Password reset email sent to: " + user.email);
+  })
+  //errors
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // ..
+  });
+})
+
+function objectLog(bookObject)
+{
+for (const key in bookObject) {
+    console.dir(key);
+}
+}
+
+
+
+//this function does the heavy lifting of accessing all the information from the data base and then creating a new post element that 
+// contains all the information from the user pulled from the database.
+function readPost(){
+    let userCart = []
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, `books/`)).then((snapshot) => {
+    if (snapshot.exists()) {
+        let userObject = snapshot.val()
+        console.log(userObject);
+        createBooklist(userObject);
+    }
+     else {
+        console.log("No data available");
+    }
+    }).catch((error) => {
+    console.error(error);
+    
+    
+    })
+   
+}
+
+
+
+function createBooklist(userObject)
+{
+
+    for(const object in userObject)
+        {
+         booksArray.push(userObject[object]);
+          let bookCard = document.createElement('div');
+          let bookTitle = document.createElement('h4');
+          bookTitle.innerText = userObject[object].bookTitle;
+          let bookAuthor = document.createElement('h7');
+          bookAuthor.innerText = "Author: " + userObject[object].bookAuthor;
+          let bookDesc = document.createElement('p');
+          bookDesc.innerText = "Description: " + userObject[object].bookDescription;
+          let bookPrice = document.createElement('p');
+          bookPrice.innerText = "Price: $"+userObject[object].bookPrice;
+          bookCard.classList = "bookCard";
+          let newButton = document.createElement('button');
+          newButton.innerText="Add to cart"
+          container.appendChild(bookCard);
+          bookCard.appendChild(bookTitle);
+          bookCard.appendChild(bookAuthor);
+          bookCard.appendChild(bookDesc);
+          bookCard.appendChild(bookPrice);
+          bookCard.appendChild(newButton);
+          newButton.addEventListener('click', function()
+          {
+            console.log(userObject[object]);
+            
+            userCart.push(userObject[object]);
+            console.log(booksArray);
+            console.log(userCart);
+            localStorage.setItem('selected',  JSON.stringify(userCart));
+            const db = getDatabase();
+                update(ref(db, 'users/' +  user.uid), {
+                    cart : userCart
+                    
+                });
+                readPost();
+            
+          })
+
+        }
+}
+// event that is ran when the delete button is pressed on the post so that all the information is deleted and is stored in the database.
+      
+
+        // login in button queries the database and checks if the user account does indeed exist and if it does it stores the value 
+        // into the user variable so that it can be used.
+        document.getElementById("login").addEventListener("click", function() {
+		  var emailLogin =  document.getElementById("emailLogin").value;
+		  var passwordLogin = document.getElementById("passwordLogin").value;
+          localStorage.setItem('loginEmail',JSON.stringify(emailLogin));
+           
+
+          //running signin function from firebase using the password and email
+		  signInWithEmailAndPassword(auth, emailLogin, passwordLogin)
+		  .then((userCredential) => {
+		    // Signed in 
+		    user = userCredential.user;
+		    console.log(user);
+		    alert(user.email+" Login successfully!!!");
+            localStorage.setItem('userCredential',  JSON.stringify(userCredential));
+            documentCard.style.display="none";
+            document.getElementById("loginPage").innerText = user.email;
+                readPost();
+               
+		  
+		  })  
+		  .catch((error) => {
+		    const errorCode = error.code;
+		    const errorMessage = error.message;
+		    alert(errorMessage);
+		  });		
+
+          
+	  });
+
+
+
+
+      </script>
+      
+<div id="header">
+    <div class="flexContainer"> <h1 id="title"> <a class="headerLink" href="index.html">BookStore</h1></a>     </div>  
+   <div id="midbar">
+      <div class="flexContainer"><h3 id="Home"> <a class="headerLink" href="index.html">Home</a><h3> </div>
+        <div class="flexContainer"> <h3 id="loginPage"> <a class="headerLink" href="user.html">Profile</a></h3></div>
+        <div class="flexContainer"> <h3 id="cart"> <a class="headerLink" href="cart.html">Cart</a></h3></div>
+      <h3> 
+         </h3>
+   </div>
+   
+    
+</div>
+
+        <div id="container">
+
+            <div id="sortHeader">
+                <h1> Sort: </h1>
+                <input type="text" id="authorSort" placeholder="Autor Name"/>
+                <input type="text" id="bookSort" placeholder="Book Title"/>
+                <input type="text" id="categorySort" placeholder="Category Sort"/>
+
+            </div>
+            <div class="cardContainer" id="loginCard">
+
+                <div class="card">
+    
+    
+                    <div id="subHeading">
+                        <h2><u>Sign up</u></h2>
+                        <input type="text" id="full_name" placeholder="Full Name"/>
+                        <input type="email" id="email" placeholder="Email"/>
+                        <input type="password" id="password" placeholder="New Password"/>
+                        <br>
+                        <input type="submit" id="signup" name="signup_submit" value="signup"/>
+                        <h2><u>Login</u></h2>
+                        <input type="email" id="emailLogin" placeholder="Email"/>
+                        <input type="password" id="passwordLogin" placeholder="Password"/>
+                        <br>
+                        <input type="submit" id="login" name="login" value="login"/>
+                        <button id="reset">Reset Password</button>
+                        
+                       
+                      
+                    </div>
+    
+                </div>
+
+            </div>
+
+
+
+            
+
+
+            
+               
+
+                </div>
+
+           
+
+  
+
+   
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Store</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <script type="module">
+        /*
+        Name: Rene Suarez
+        Program Name: Assignment 2 Firebase
+        Details: This project uses firebase to create a backend for our website it allows for users to create,login,and save data to their accounts.
+        so that it can be accessed later.
+        
+        */
+        
+        
+        
+        // Import the functions you need from the SDKs you need
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+        import { getDatabase, ref, set,child, get,update } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+        
+        
+        
+        
+        
+        // TODO: Add SDKs for Firebase products that you want to use
+        
+        // https://firebase.google.com/docs/web/setup#available-libraries
+        
+        
+        // Your web app's Firebase configuration
+        
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        
+        const firebaseConfig = {
+        
+          apiKey: "AIzaSyDKHzHvEsypKcPzLNyTXvh9857-TKDrpi8",
+        
+          authDomain: "final-project-98675.firebaseapp.com",
+        
+          databaseURL: "https://final-project-98675-default-rtdb.firebaseio.com",
+        
+          projectId: "final-project-98675",
+        
+          storageBucket: "final-project-98675.appspot.com",
+        
+          messagingSenderId: "69505154519",
+        
+          appId: "1:69505154519:web:8b82a2ad6140ab62e7df92",
+        
+          measurementId: "G-K20SDC8TQP"
+        
+        };
+        
+        let container = document.getElementById('container2');
+        // Initialize Firebase
+        
+        const app = initializeApp(firebaseConfig);
+        let cartTitle = document.getElementById('cartTitle')
+        let total = 0;
+        let array = [];
+        let userCredential = JSON.parse(localStorage.getItem('userCredential'))
+        console.log(userCredential);
+        let checkoutBox = document.getElementById("checkoutBox");
+        let checkoutTotal = document.getElementById('checkoutTotal');
+        let orderButton = document.getElementById("orderButton")
+        let orderFinal = document.getElementById("orderFinal");
+        let user = userCredential.user;
+       const db = getDatabase();
+        const dbRef = ref(getDatabase());
+		  get(child(dbRef, `users/` + userCredential.user.uid)).then((snapshot) => {
+    if (snapshot.exists()) {
+        let userObject = snapshot.val()
+        console.log(userObject.cart);
+
+         array = userObject.cart;
+         
+         array.forEach(element => {
+        let bookinCart = document.createElement('div');
+        bookinCart.classList="bookcartCard";
+        let bookincartTitle = document.createElement('h4');
+        bookincartTitle.innerText = "Title: " + element.bookTitle;
+        let bookPrice = document.createElement('p');
+        let removeButton = document.createElement('button');
+        removeButton.innerText = "remove";
+        bookPrice.innerText = "Price: $"+element.bookPrice;
+        container.appendChild(bookinCart);
+        bookinCart.appendChild(bookincartTitle);
+        bookinCart.appendChild(bookPrice);
+        bookinCart.appendChild(removeButton);
+        removeButton.addEventListener('click', function()
+        {
+            let bookState = removeButton.parentElement;
+
+            total = total-element.bookPrice;
+            cartTitle.innerText = "Total: $"+total;
+            removeButton.parentElement.parentElement.removeChild(bookState);
+            array.pop(element);
+            console.log(array);
+            update(ref(db, 'users/' +  user.uid), {
+                    cart : array
+                    
+                });
+        })
+  
+        total+=element.bookPrice;
+        checkoutTotal.innerText = "Total: $"+total;
+        cartTitle.innerText = "Total: $"+total;
+        });
+
+    }
+     else {
+        console.log("No data available");
+    }
+    }).catch((error) => {
+    console.error(error);
+    
+
+
+    
+    });
+
+
+
+        
+        
+
+        let checkoutButton = document.getElementById("checkout");
+
+        checkoutButton.addEventListener('click', function ()
+        {
+            emptyContainer();
+            checkoutBox.style.display="flex";
+        } )
+
+
+
+        
+        orderButton.addEventListener('click', function ()
+        {
+            checkoutBox.style.display="none";
+            orderFinal.style.display="block";
+            container.appendChild(orderFinal);
+            array = [];
+            localStorage.setItem('selected',  JSON.stringify(array));
+        } )
+
+
+        function emptyContainer()
+        {
+           
+           
+                container.innerHTML = "";
+           
+        }
+</script>        
+</head>
+<body>
+<div id="header">
+    <div class="flexContainer"> <h1 id="title"> <a class="headerLink" href="index.html">BookStore</h1></a>     </div>  
+   <div id="midbar">
+      <div class="flexContainer"><h3 id="Home"> <a class="headerLink" href="index.html">Home</a><h3> </div>
+        <div class="flexContainer"> <h3 id="loginPage"> <a class="headerLink" href="user.html">Profile</a></h3></div>
+        <div class="flexContainer"> <h3 id="cart"> <a class="headerLink" href="cart.html">Cart</a></h3></div>
+      <h3> 
+         </h3>
+   </div>
+   
+    
+</div>
+<div id="checkoutBox">
+
+    <h2>Enter Shipping Information</h2>
+    <input type="text" id="fullName" placeholder="Full Name"/>
+    <input type="text" id="address" placeholder="Address"/>
+    <input type="text" id="creditCard" placeholder="Card Number"/>
+    <input type="text" id="address" placeholder="Address"/>
+    <input type="text" id="City" placeholder="City"/>
+    <input type="text" id="Province" placeholder="Province"/>
+    <button id="orderButton">Order</button>
+    <h4 id="checkoutTotal"></h4>
+
+    <h1 id="orderFinal">Thank you for your order!</h1>
+</div>
+        <div id="container2">
+     
+           
+
+      
+            <h2 id="cartTitle">In Cart:</h2>
+            <h2>In Cart:</h2>
+            <button id="checkout">Check out</button>
+
+            </div>
+
+
+
+            
+
+
+            
+               
+
+                </div>
+
+           
+
+  
+
+   
+</body>
+</html>
