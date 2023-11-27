@@ -58,72 +58,44 @@
         };
         
         let container = document.getElementById('container2');
-        // Initialize Firebase
+        // Initialize Firebase and variables.
         
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth();
         const db = getFirestore(app);
         let user = "";
-        let profileCard = document.getElementById("profileCard");
+        let editprofile = document.getElementById("editprofile");
+        let profileCard = document.getElementById('profileCard');
+        let fullName = document.createElement('h4');
+        let email = document.createElement('h5');
 
 
+        // logs in the user
         document.getElementById("login").addEventListener("click", function() {
 		  var emailLogin =  document.getElementById("emailLogin").value;
 		  var passwordLogin = document.getElementById("passwordLogin").value;
-           
-
-          //running signin function from firebase using the password and email
+      //firebase signin function.
 		  signInWithEmailAndPassword(auth, emailLogin, passwordLogin)
 		  .then((userCredential) => {
-		    // Signed in 
 		    user = userCredential.user;
 		    console.log(user);
 		    alert(user.email+" Login successfully!!!");
-            document.getElementById("loginPage").innerText = user.email;
-            profileCard.innerHTML="";
-          let name = document.createElement('h3');
-          let email = document.createElement('h5');
-          let resetButton = document.createElement('button');
-          resetButton.innerText = "Reset Password";
-          resetButton.addEventListener("click", function()
-{   
-    //gets the users email from the login input
-    email = emailLogin
-    const auth = getAuth();
-    //running firebase password reset function
-sendPasswordResetEmail(auth, email)
-  .then(() => {
-    //alerts user that the email has been sent
-    alert("Password reset email sent to: " + user.email);
-  })
-  //errors
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // ..
-  });
-})
-          profileCard.appendChild(name);
-          profileCard.appendChild(email);
-          profileCard.appendChild(resetButton)
-          email.innerText = user.email;
-
-
-
-
-
-
-            
-          const dbRef = ref(getDatabase());
-		  get(child(dbRef, `users/` + user.uid)).then((snapshot) => {
+        const db = getDatabase();
+        const dbRef = ref(getDatabase());
+        //accesses the database to display the users information.
+		  get(child(dbRef, `users/` + userCredential.user.uid)).then((snapshot) => {
     if (snapshot.exists()) {
         let userObject = snapshot.val()
         console.log(userObject);
-        name.innerText = userObject.fullname;
-
-
-
+        profileCard.innerHTML="";
+        fullName.innerText = "Full Name: "+userObject.fullname;
+        email.innerText = "Email: " +userObject.email;
+        profileCard.appendChild(fullName);
+        profileCard.appendChild(email);
+        profileCard.appendChild(editprofile);
+        editprofile.style.display="flex";
+        
 
     }
      else {
@@ -131,19 +103,36 @@ sendPasswordResetEmail(auth, email)
     }
     }).catch((error) => {
     console.error(error);
-    
-    
-    })
-   
+
+    });
+
+        
 		  })  
 		  .catch((error) => {
 		    const errorCode = error.code;
 		    const errorMessage = error.message;
 		    alert(errorMessage);
-		  });		
-
-          
+		  });		     
 	  });
+
+    //accesses the firebase database and allows for the user to update their fullname as well as email.
+    document.getElementById('update').addEventListener('click', function()
+      {
+
+        let newName = document.getElementById('changeName').value;
+        let newEmail = document.getElementById('changeEmail').value;
+        fullName.innerText = "Full Name: "+ newName;
+        email.innerText = "Email: " +newEmail;
+        const db = getDatabase();
+  set(ref(db, 'users/' + user.uid), {
+    fullname: newName,
+    email: newEmail
+  });
+})
+
+
+    
+
 
 
         </script>
@@ -179,7 +168,12 @@ sendPasswordResetEmail(auth, email)
                         <br>
                         <input type="submit" id="login" name="login" value="login"/>
                         <button id="reset">Reset Password</button>
-                        
+                        <div id="editprofile">
+                          <h3>Edit Profile</h3>
+                          <input type="email" id="changeEmail" placeholder="Email"/>
+                          <input type="email" id="changeName" placeholder="Name"/>
+                          <button id="update">Update</button>
+                        </div>
                        
                       
                     </div>

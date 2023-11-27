@@ -63,8 +63,6 @@ const firebaseConfig = {
 // Initialize Firebase
 
 const app = initializeApp(firebaseConfig);
-
-
         const database = getDatabase(app);
         const auth = getAuth();
         const db = getFirestore(app);
@@ -80,8 +78,6 @@ const app = initializeApp(firebaseConfig);
         let documentCard = document.getElementById('loginCard');
         let booksArray = [];
         let userCart = [];
-
-
         // Adding an event that occurs everytime that the signup button gets clicked by the user it takes the 
         // data that is in the user signup fields and sends them to the data to create a new user account.
         signup.addEventListener('click',(e)=> {
@@ -113,8 +109,7 @@ const app = initializeApp(firebaseConfig);
                 });
             
         })
-
-        // adds click event listener so that the firebase function that sends a password reset email gets sent.
+// adds click event listener so that the firebase function that sends a password reset email gets sent.
 resetButton.addEventListener("click", function()
 {   
     //gets the users email from the login input
@@ -134,17 +129,9 @@ sendPasswordResetEmail(auth, email)
   });
 })
 
-function objectLog(bookObject)
-{
-for (const key in bookObject) {
-    console.dir(key);
-}
-}
 
-
-
-//this function does the heavy lifting of accessing all the information from the data base and then creating a new post element that 
-// contains all the information from the user pulled from the database.
+// This function accesses the database and retrieves the section with all the books and then populates the page with them 
+// by  using the createbooklist function.
 function readPost(){
     let userCart = []
     const dbRef = ref(getDatabase());
@@ -165,11 +152,10 @@ function readPost(){
    
 }
 
-
-
 function createBooklist(userObject)
 {
 
+    //looping through the object that contains all of the books and creating their own cards 
     for(const object in userObject)
         {
          booksArray.push(userObject[object]);
@@ -191,6 +177,7 @@ function createBooklist(userObject)
           bookCard.appendChild(bookDesc);
           bookCard.appendChild(bookPrice);
           bookCard.appendChild(newButton);
+          //adds button to each book so that they are added to cart
           newButton.addEventListener('click', function()
           {
             console.log(userObject[object]);
@@ -198,6 +185,7 @@ function createBooklist(userObject)
             userCart.push(userObject[object]);
             console.log(booksArray);
             console.log(userCart);
+            //adds the items to local storage as well as to the users cart in the database.
             localStorage.setItem('selected',  JSON.stringify(userCart));
             const db = getDatabase();
                 update(ref(db, 'users/' +  user.uid), {
@@ -210,17 +198,11 @@ function createBooklist(userObject)
 
         }
 }
-// event that is ran when the delete button is pressed on the post so that all the information is deleted and is stored in the database.
-      
-
-        // login in button queries the database and checks if the user account does indeed exist and if it does it stores the value 
-        // into the user variable so that it can be used.
+// logs in the user
         document.getElementById("login").addEventListener("click", function() {
 		  var emailLogin =  document.getElementById("emailLogin").value;
 		  var passwordLogin = document.getElementById("passwordLogin").value;
           localStorage.setItem('loginEmail',JSON.stringify(emailLogin));
-           
-
           //running signin function from firebase using the password and email
 		  signInWithEmailAndPassword(auth, emailLogin, passwordLogin)
 		  .then((userCredential) => {
@@ -228,25 +210,19 @@ function createBooklist(userObject)
 		    user = userCredential.user;
 		    console.log(user);
 		    alert(user.email+" Login successfully!!!");
+            //sets the users credientials into storage to hold onto when logged into cart.
             localStorage.setItem('userCredential',  JSON.stringify(userCredential));
             documentCard.style.display="none";
             document.getElementById("loginPage").innerText = user.email;
                 readPost();
-               
-		  
+ 
 		  })  
 		  .catch((error) => {
 		    const errorCode = error.code;
 		    const errorMessage = error.message;
 		    alert(errorMessage);
-		  });		
-
-          
+		  });		     
 	  });
-
-
-
-
       </script>
       
 <div id="header">

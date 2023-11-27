@@ -58,15 +58,13 @@
         
         };
         
+        //Initializing variables,localstorage, and firebase
         let container = document.getElementById('container2');
-        // Initialize Firebase
-        
         const app = initializeApp(firebaseConfig);
         let cartTitle = document.getElementById('cartTitle')
         let total = 0;
         let array = [];
         let userCredential = JSON.parse(localStorage.getItem('userCredential'))
-        console.log(userCredential);
         let checkoutBox = document.getElementById("checkoutBox");
         let checkoutTotal = document.getElementById('checkoutTotal');
         let orderButton = document.getElementById("orderButton")
@@ -74,13 +72,14 @@
         let user = userCredential.user;
        const db = getDatabase();
         const dbRef = ref(getDatabase());
+
+
+
+// gets all the of the items that are in the logged in users cart and then displays each of them with their own remove buttons.
 		  get(child(dbRef, `users/` + userCredential.user.uid)).then((snapshot) => {
     if (snapshot.exists()) {
         let userObject = snapshot.val()
-        console.log(userObject.cart);
-
          array = userObject.cart;
-         
          array.forEach(element => {
         let bookinCart = document.createElement('div');
         bookinCart.classList="bookcartCard";
@@ -94,6 +93,7 @@
         bookinCart.appendChild(bookincartTitle);
         bookinCart.appendChild(bookPrice);
         bookinCart.appendChild(removeButton);
+        //removes the element that the delete button was pressed on.
         removeButton.addEventListener('click', function()
         {
             let bookState = removeButton.parentElement;
@@ -103,14 +103,14 @@
             removeButton.parentElement.parentElement.removeChild(bookState);
             array.pop(element);
             console.log(array);
+            //updates the firebase database so it knows when a user removes a book.
             update(ref(db, 'users/' +  user.uid), {
                     cart : array
                     
                 });
         })
-  
+  //updates total
         total+=element.bookPrice;
-        checkoutTotal.innerText = "Total: $"+total;
         cartTitle.innerText = "Total: $"+total;
         });
 
@@ -120,28 +120,19 @@
     }
     }).catch((error) => {
     console.error(error);
-    
 
-
-    
     });
-
-
-
-        
-        
-
+    //opens up checkout page for user.
         let checkoutButton = document.getElementById("checkout");
-
         checkoutButton.addEventListener('click', function ()
         {
             emptyContainer();
             checkoutBox.style.display="flex";
+            checkoutTotal.innerText = "Total: $"+total;
+            checkoutTotal.style.display = "flex"
         } )
 
-
-
-        
+        //when order is pressed it hides the display and thanks the user for ordering.
         orderButton.addEventListener('click', function ()
         {
             checkoutBox.style.display="none";
@@ -150,7 +141,6 @@
             array = [];
             localStorage.setItem('selected',  JSON.stringify(array));
         } )
-
 
         function emptyContainer()
         {
