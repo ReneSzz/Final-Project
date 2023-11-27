@@ -9,13 +9,6 @@
 </head>
 <body>
     <script type="module">
-/*
-Name: Rene Suarez
-Program Name: Assignment 2 Firebase
-Details: This project uses firebase to create a backend for our website it allows for users to create,login,and save data to their accounts.
-so that it can be accessed later.
-
-*/
 
 
 
@@ -138,7 +131,6 @@ function readPost(){
     get(child(dbRef, `books/`)).then((snapshot) => {
     if (snapshot.exists()) {
         let userObject = snapshot.val()
-        console.log(userObject);
         createBooklist(userObject);
     }
      else {
@@ -146,8 +138,7 @@ function readPost(){
     }
     }).catch((error) => {
     console.error(error);
-    
-    
+
     })
    
 }
@@ -180,11 +171,7 @@ function createBooklist(userObject)
           //adds button to each book so that they are added to cart
           newButton.addEventListener('click', function()
           {
-            console.log(userObject[object]);
-            
             userCart.push(userObject[object]);
-            console.log(booksArray);
-            console.log(userCart);
             //adds the items to local storage as well as to the users cart in the database.
             localStorage.setItem('selected',  JSON.stringify(userCart));
             const db = getDatabase();
@@ -193,7 +180,6 @@ function createBooklist(userObject)
                     
                 });
                 readPost();
-            
           })
 
         }

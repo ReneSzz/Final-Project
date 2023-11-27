@@ -8,14 +8,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <script type="module">
-        /*
-        Name: Rene Suarez
-        Program Name: Assignment 2 Firebase
-        Details: This project uses firebase to create a backend for our website it allows for users to create,login,and save data to their accounts.
-        so that it can be accessed later.
-        
-        */
-        
+   
         
         
         // Import the functions you need from the SDKs you need
@@ -102,7 +95,6 @@
             cartTitle.innerText = "Total: $"+ total;
             removeButton.parentElement.parentElement.removeChild(bookState);
             array.pop(element);
-            console.log(array);
             //updates the firebase database so it knows when a user removes a book.
             update(ref(db, 'users/' +  user.uid), {
                     cart : array
